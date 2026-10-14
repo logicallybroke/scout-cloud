@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 @AGENTS.md
 
-**This repository is at the design stage: there is no code and no `package.json`.** Read `SCOUT_CONTEXT.md` for status, the D1–D3 plan and what is verified. The prototype it grows from is `../scout-demo`, frozen at `aafd6a2`; read it, never change it. Sessions work best started in `~/codes/scout-agent/` so all three repos are visible. Claude Code memory is per starting folder, so durable facts belong in repo files.
+**D1's minimal cloud is built on branch `release-a-d1` (Next.js 16, framework-free `server/` modules, JSON store).** Read `SCOUT_CONTEXT.md` for status, the D1–D3 plan and what is verified. The prototype it grows from is `../scout-demo`, frozen at `aafd6a2`; read it, never change it. Sessions work best started in `~/codes/scout-agent/` so all three repos are visible. Claude Code memory is per starting folder, so durable facts belong in repo files.
 
 ## Where context lives
 
@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-None yet. There is no `package.json`; do not invent a command. When a stack is approved, list its scripts here exactly as `package.json` defines them. PROPOSED (`docs/CLOUD_DESIGN.md` §10): a separate `typecheck` script (`tsc --noEmit`), because in Next.js only `npm run build` type-checks and the dev server doesn't; a fixed dev port `http://localhost:4000`, because the scout-js examples use 3000 and 5173 (the seeded allowed origins).
+On `release-a-d1`: `npm run dev` (http://localhost:4000), `npm run build`, `npm start` (uses `PORT`), `npm run typecheck` (`tsc --noEmit`; the dev server doesn't type-check), `npm test` (`node --test`), `npm run project:create -- "Name"`. `@scout/core` comes from `vendor/scout-core-0.0.0.tgz` (see `vendor/README.md`). Server modules use explicit `.ts` imports and no `@/` alias, so `node --test` and the script can load them.
 
 If Next.js is used, expect a harmless `turbopack.root` warning from the stray `/home/ayush-dev/codes/package-lock.json`. Setting `turbopack.root` or deleting that file needs Ayush's OK.
 

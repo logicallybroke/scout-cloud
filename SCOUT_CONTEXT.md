@@ -23,7 +23,9 @@ Likely selling order is hosted first (no client engineer needed); engineering or
 
 ## Verification record
 
-Nothing has run in this repository. Measured facts carried over from `scout-demo` (Ayush's single runs on his Ubuntu laptop, 11 Oct 2026, unless noted; not benchmarks):
+**D1 cloud, 14 Oct, run by the agent** (Node v22.23.2, `next build` then `next start` on localhost): `tsc --noEmit` clean; `node --test` 7/7; every route answered as designed: no key 401; wrong or missing passcode 401; workflow saved as draft 201; same id 409; undeclared `$input` 422; drafts hidden from visitors; a passed validation publishes and bumps configVersion; example values stripped for visitors; facts PUT; an edit returns the workflow to draft; any Origin gets CORS (no allowlist); a deploy without `SCOUT_TOKEN_PEPPER` answers 503, not a bare 500; the operator endpoint answers 404 without its secret, 401 wrong, 201 right. With no model key, decide returns `502 model_error`. The scout-js headless-Chrome loop (record, save, validate, guided run) ran against this server. **Not yet checked:** a real decide call (needs `OPENAI_API_KEY`), the cost cap tripping in a live run (unit-tested only), Railway.
+
+Measured facts carried over from `scout-demo` (Ayush's single runs on his Ubuntu laptop, 11 Oct 2026, unless noted; not benchmarks):
 
 | What | Result |
 |---|---|

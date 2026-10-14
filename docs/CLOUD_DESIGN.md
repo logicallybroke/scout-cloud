@@ -626,7 +626,7 @@ Shared between `scout-js` and `scout-cloud`, so they belong in the contract. **N
 
 Each step is reviewable in one sitting and ends with the checks Ayush should run. Nothing is committed without his explicit request. **approval** marks a decision needed first.
 
-**D1: minimal cloud (PROPOSED)**
+**D1: minimal cloud. Status 14 Oct: C0 and D1.1–D1.4 BUILT on `release-a-d1`** (plus an operator endpoint for creating projects on the host, `README.md`); D1.5 (Railway) waits for Ayush's account.
 
 | Step | Content | Needs |
 |---|---|---|
