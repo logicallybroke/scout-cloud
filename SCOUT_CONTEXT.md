@@ -17,7 +17,7 @@ Likely selling order is hosted first (no client engineer needed); engineering or
 ## Current state (14 Oct 2026)
 
 - `~/codes/scout-agent/scout-cloud`, `main`, remote https://github.com/logicallybroke/scout-cloud.git. One commit, `1d23756` (initial docs, 13 Oct), pushed to `origin/main` (checked 14 Oct).
-- **No code.** All docs are PROPOSED, awaiting review. They were trimmed and re-planned around D1–D3 on 14 Oct (Ayush's request) and are not committed yet. `docs/API_CONTRACT.md` and `docs/BACKGROUND.md` are identical to the `scout-js` copies.
+- **D1 minimal cloud BUILT on branch `release-a-d1`** (14 Oct): decide, agent config, admin workflows/validation/facts behind the teach passcode, JSON store, $4 cap, rate limits, operator endpoint for creating projects, Railway deploy notes in the README. Not merged to `main`, not deployed. Docs are PROPOSED, awaiting review. They were trimmed and re-planned around D1–D3 on 14 Oct (Ayush's request) and are not committed yet. `docs/API_CONTRACT.md` and `docs/BACKGROUND.md` are identical to the `scout-js` copies.
 - The decision service exists only in the prototype (`scout-demo` `app/api/scout/route.ts`, `lib/scout/server/decide.ts`, `lib/scout/server/model.ts`); what comes here and when is in `docs/ORIGIN.md`.
 - Siblings: `scout-js` (browser SDKs, initial docs commit `800ea36`, pushed) and `scout-demo` (frozen at `aafd6a2`). `scout-server-sdks` is planned, not created. The unversioned `~/codes/scout-agent/CLAUDE.md` indexes the repos.
 
