@@ -55,6 +55,24 @@ All three live side by side in `~/codes/scout-agent/`.
 - **scout-demo** (https://github.com/logicallybroke/scout-demo, branch `prototype`): the prototype, built 4–11 October 2026 and **frozen at commit `aafd6a2`** as history and a fallback. Scout Cloud's first server code (decision endpoint, model module) will be copied from it with provenance, never moved. Do not add code there.
 - **scout-server-sdks** (future, not created): Node, Python and Java clients for the Client API.
 
-## Getting started
+## Run it (D1 minimal cloud, branch `release-a-d1`)
 
-There is nothing to install or run yet. The stack, hosting and scripts are pending Ayush's approval; see `SCOUT_CONTEXT.md`.
+Local: create `.env.local` with `OPENAI_API_KEY=…`, then `npm install`, `npm run dev` (http://localhost:4000), and
+`npm run project:create -- "My app"` to get a project key and teach passcode. `npm run typecheck`, `npm test`, `npm run build`.
+
+### Deploy on Railway (Ayush's account; about $5 a month)
+
+1. railway.com → New Project → Deploy from GitHub repo → `logicallybroke/scout-cloud`, branch `release-a-d1`.
+2. Add a **Volume** to the service, mounted at `/data` (the JSON workflow store lives there).
+3. **Variables** (Railway's dashboard; never in git):
+   - `OPENAI_API_KEY`: the model key (only the server ever sees it).
+   - `SCOUT_TOKEN_PEPPER`: a long random value. Set it once and never change it: passcodes are hashed with it.
+   - `SCOUT_DATA_DIR=/data`, `SCOUT_GLOBAL_MONTHLY_BUDGET_USD=4`.
+   - `SCOUT_OPERATOR_SECRET`: a long random value (24+ characters), used once below.
+4. Railway builds with `npm run build` and starts `npm start` (it sets `PORT`). Settings → Networking → **Generate Domain**.
+   Check: `https://<domain>/health` returns `{"ok":true}`.
+5. Create the project for an app (the passcode is shown once):
+   `curl -X POST https://<domain>/v1/operator/projects -H "Authorization: Bearer <SCOUT_OPERATOR_SECRET>" -H "Content-Type: application/json" -d '{"name":"Aman app"}'`
+   Then you may clear `SCOUT_OPERATOR_SECRET` to switch the endpoint off.
+
+Give the app owner: the project key, the teach passcode, and `https://<domain>` as `apiOrigin`.
