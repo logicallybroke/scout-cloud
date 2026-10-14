@@ -56,10 +56,11 @@ Scout gives live software demos: an admin teaches a workflow, a visitor asks for
 Scout Cloud is the server side: API, admin console, workflow and facts store, decision service, sessions/transcripts/insights, and (Release B) the hosted demo runner. The browser runtime lives in `scout-js`.
 
 1. Review `docs/CLOUD_DESIGN.md` and `docs/API_CONTRACT.md` with Ayush; nothing is built before approval.
-2. Choose the stack and storage (pending approval).
-3. Import the prototype's server pieces from `scout-demo@aafd6a2` with provenance.
-4. Minimal cloud for Release A (in-product script tag): projects, keys and origins, published config, sessions, decide, events, admin workflows and facts.
-5. Release B spike: hosted runner (cloud browser, demo-account login, injected `@scout/agent`, stream to the visitor).
+2. **D1 minimal cloud** (Ayush, 14 Oct; `docs/CLOUD_DESIGN.md` §6.2): import the prototype's decide pieces from `scout-demo@aafd6a2` with provenance; decide with server-owned catalog and facts, workflows and facts as JSON files, serving `agent.js`, a hard cost cap and a rate limit; hosted so Aman can test from his own app.
+3. **D2** the full Release A cloud: database, keys and allowlist, admin sign-in and console, snapshots, sessions and events, Client API, jobs, first real deployment.
+4. **D3** the Release B spike: cloud browser, demo-account login, injected `@scout/agent`, stream to the visitor.
+
+One branch per deliverable; commit after each verified step (only on Ayush's explicit "commit"); merge to `main` when the demo works.
 
 The sequence is a plan, not evidence or a deadline. Make small early checks (model access, a cloud browser session) before full integration.
 
@@ -68,13 +69,13 @@ The sequence is a plan, not evidence or a deadline. Make small early checks (mod
 - **Thin routes.** Handlers parse, authenticate, validate, call a focused module, and shape the response. Behavior lives in modules.
 - **The browser runs and verifies; the cloud decides and records.** An `ok: true` from an action means "accepted". The cloud never claims a step happened; it records what the browser reported (validation runs are admin-reported evidence in Release A).
 - Add infrastructure (queues, WebSockets, vector search, caches, remote browsers) only for a concrete requirement.
-- PROPOSED (pending Ayush): keep product-independent logic shared with `@scout/core` (request limits, decision checks, workflow shape checks) by importing it rather than copying or forking it. The PROPOSED method (`docs/CLOUD_DESIGN.md` §10.2, pending approval) is a `file:` link during development, then a pinned registry version.
+- PROPOSED (pending Ayush): keep product-independent logic shared with `@scout/core` (request limits, decision checks, workflow shape checks) by importing it rather than copying or forking it. How is pending (`docs/CLOUD_DESIGN.md` §10.2): a `file:` link works only on the laptop, so the hosted D1 cloud needs a copy with provenance or a published package.
 - Names, endpoints and shapes follow `docs/API_CONTRACT.md`. A new name is added there first.
 
 ### Keys and access
 
 - **Secret keys are server-only.** Store only a hash; show the key once at creation, then only its last 4 characters. A request carrying a secret key and an `Origin` header is rejected (`403 secret_key_in_browser`) and the key is flagged.
-- **Publishable keys are origin-allowlisted.** Every publishable-key Agent API request must carry an `Origin` that exactly matches one of the project's allowed origins. Hosted-session requests (Release B, `docs/API_CONTRACT.md` §3.6) authenticate by session token only, and get CORS only for their experience's `hosted.startUrl` origin (PROPOSED, `docs/API_CONTRACT.md` §2.2). CORS echoes the matched origin with `Vary: Origin`; no cookies, no credentials mode. The allowlist only stops other websites; scripts can fake `Origin`, so rate limits and budgets are the real defence.
+- **Publishable keys are origin-allowlisted.** Every publishable-key Agent API request must carry an `Origin` that exactly matches one of the project's allowed origins. D1 exception (Ayush, 14 Oct; contract §2.2, §2.6): no allowlist, under a $4 hard cost cap and a rate limit; an allowlist comes later only if required. D1's teach saving uses an interim per-project passcode, stored only as a hash. Hosted-session requests (Release B, `docs/API_CONTRACT.md` §3.6) authenticate by session token only, and get CORS only for their experience's `hosted.startUrl` origin (PROPOSED, `docs/API_CONTRACT.md` §2.2). CORS echoes the matched origin with `Vary: Origin`; no cookies, no credentials mode. The allowlist only stops other websites; scripts can fake `Origin`, so rate limits and budgets are the real defence.
 - Admin tokens are scoped (project, origin, `teach` or `console`) and expire. Teach scope never manages keys, origins, facts or experiences.
 - Resources in another project return `404 not_found`, never revealing that they exist.
 - Modes and URL switches (like `?scout=teach`) are never authentication.

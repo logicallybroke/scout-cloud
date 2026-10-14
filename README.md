@@ -18,7 +18,7 @@ The part that clicks and types runs in the visitor's browser (the `scout-js` SDK
 | **Protection** | Origin allowlists for publishable keys, rate limits, and a monthly model budget per project, because a public key means anyone can call the decision endpoint. | A |
 | **Hosted demo runner** | Runs the client's product in a cloud browser logged into a demo account, injects the same `@scout/agent` runtime into that page, and streams it to the visitor. Delivered by plain link, iframe, or the `@scout/embed` widget on a marketing site. Supersonik-style. | B |
 
-Release A is the in-product release: the client pastes a script tag into their own app. Release B is hosted demos and comes after Release A. Release B reuses Release A's runtime and cloud, so the cloud is built for A first.
+Release A is the in-product release: the client pastes a script tag into their own app. Release B is hosted demos and comes after Release A. Release B reuses Release A's runtime and cloud, so the cloud is built for A first. Release A is built in three deliverables: **D1** a minimal hosted cloud (decide, workflows and facts as JSON files, a hard cost cap), **D2** the full cloud in this table, **D3** a Release B spike (`docs/CLOUD_DESIGN.md` §6).
 
 ```
  CLIENT'S APP (browser)                SCOUT CLOUD (this repo)                 CLIENT'S SERVER (optional)
@@ -57,4 +57,4 @@ All three live side by side in `~/codes/scout-agent/`.
 
 ## Getting started
 
-There is nothing to install or run yet. The stack, database and scripts are pending Ayush's approval; see `SCOUT_CONTEXT.md`.
+There is nothing to install or run yet. The stack, hosting and scripts are pending Ayush's approval; see `SCOUT_CONTEXT.md`.

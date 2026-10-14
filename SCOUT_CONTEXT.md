@@ -1,108 +1,75 @@
 # Scout Cloud: context and status
 
-This file is the record of what exists, what is verified, what was decided, and what comes next in `scout-cloud`. Standing rules are in `AGENTS.md`; design is in `docs/`. Only checks that were actually run are marked as passed, with who ran them.
+What exists, what is verified, what was decided, and what comes next in `scout-cloud`. Standing rules are in `AGENTS.md`; design is in `docs/`. Only checks that were actually run are marked as passed, with who ran them.
 
 ## Goal
 
-Scout gives live software demos. An admin teaches a workflow by performing it; a visitor asks for it by chat or voice; Scout performs it on screen, verifies each step, and explains product facts.
+Scout gives live software demos: an admin teaches a workflow, a visitor asks by chat or voice, Scout performs it on screen, verifies each step and explains product facts. Scout Cloud is the server side: the API, admin console, workflow and facts store, decision service, sessions and transcripts, and (Release B) the hosted demo runner. The browser runtime is in `scout-js`.
 
-Scout Cloud is the server side: the API (Agent, Admin, Client), the admin console, the workflow and facts store, the decision service, sessions/transcripts/insights, and, for Release B, the hosted demo runner. The browser runtime is in `scout-js`.
+**Plan (Ayush, 14 Oct 2026):** Release A ships as three demoable deliverables (`docs/CLOUD_DESIGN.md` §6, §12):
 
-- **Release A (first):** in-product. The client pastes a script tag (`@scout/agent`) into their own app. Scout records and replays by element description, with widget, chat, voice and guided demos. Needs a minimal cloud.
-- **Release B (after A):** Supersonik-style hosted demos. The cloud runs the client's product in a cloud browser logged into a demo account, injects the same `@scout/agent` runtime, and streams it to the visitor by link, iframe or `@scout/embed`.
-- Engineering order: runtime and minimal cloud first (testable locally, reused by B). Likely selling order: hosted first, because it needs no client engineer.
-- Ultimate target (from scout-demo HLD §8): seamless installation in client apps, no noticeable performance cost, no Scout-team work in client code.
+- **D1 minimal cloud:** decide (the prototype's route, ported, with the server owning catalog and facts), workflows and facts as JSON files, serving `agent.js`, one hard monthly cost cap and a basic rate limit. Hosted, so Aman can test the npm package in his own app.
+- **D2 "Works on a classic Java app too, on the full cloud":** database, keys and allowlist, admin sign-in and console, snapshots, sessions and events, Client API, jobs, first real deployment.
+- **D3 "No engineer needed":** the Release B spike (cloud browser, injected `@scout/agent`, stream, one demo account).
 
-## Current state (13 Oct 2026)
+Likely selling order is hosted first (no client engineer needed); engineering order is D1 → D2 → D3.
 
-- Repository created on 13 Oct 2026 at `~/codes/scout-agent/scout-cloud`: `git init` on `main`, remote `origin` = https://github.com/logicallybroke/scout-cloud.git.
-- **No code.** One commit: the initial docs-only commit on `main` (13 Oct 2026, Ayush's request), holding the files listed below. Not pushed when this was written; Ayush pushes from his own terminal (`git push -u origin main`).
-- Files in the initial commit: `README.md`, `CLAUDE.md`, `AGENTS.md`, this file, `.gitignore`, `docs/API_CONTRACT.md` (PROPOSED, identical to `scout-js/docs/API_CONTRACT.md`), `docs/CLOUD_DESIGN.md` (PROPOSED), `docs/BACKGROUND.md` (identical to `scout-js/docs/BACKGROUND.md`), and `docs/ORIGIN.md` (PROPOSED file map from `scout-demo@aafd6a2`).
-- Sibling repos: `scout-js` (browser SDK monorepo, also created 13 Oct; its initial docs commit was made the same day) and `scout-demo` (`prototype`, frozen at `aafd6a2`; pushed to `origin/prototype` on 13 Oct). `scout-server-sdks` (Node/Python/Java Client API clients) is planned, not created.
-- An unversioned `~/codes/scout-agent/CLAUDE.md` indexes the repos, so sessions started there see all three. It is not in any repo.
+## Current state (14 Oct 2026)
 
-## Implementation status
-
-| Part | Status |
-|---|---|
-| API contract (`docs/API_CONTRACT.md`) | Written, PROPOSED, not reviewed |
-| Cloud design (`docs/CLOUD_DESIGN.md`) | Written, PROPOSED, not reviewed |
-| Shared background (`docs/BACKGROUND.md`) | Written, identical to the scout-js copy, not reviewed |
-| Import map (`docs/ORIGIN.md`) | Written, PROPOSED; nothing imported |
-| Stack, database, scripts | Not chosen (pending approval) |
-| Agent API (`/v1/agent/config`, `sessions`, `decide`, `events`) | Not built |
-| Admin API and console | Not built |
-| Client API (`experiences`, `sessions`, `transcript`; `links` in Release B) | Not built |
-| Keys, origins, rate limits, budgets | Not built |
-| Decision service | Not built here. Exists in the prototype (`scout-demo` `app/api/scout/route.ts`, `lib/scout/server/decide.ts`, `lib/scout/server/model.ts`) |
-| Insights | PROPOSED, not part of Release A's minimum |
-| Hosted runner (Release B) | Not built; no spike run |
+- `~/codes/scout-agent/scout-cloud`, `main`, remote https://github.com/logicallybroke/scout-cloud.git. One commit, `1d23756` (initial docs, 13 Oct), pushed to `origin/main` (checked 14 Oct).
+- **No code.** All docs are PROPOSED, awaiting review. They were trimmed and re-planned around D1–D3 on 14 Oct (Ayush's request) and are not committed yet. `docs/API_CONTRACT.md` and `docs/BACKGROUND.md` are identical to the `scout-js` copies.
+- The decision service exists only in the prototype (`scout-demo` `app/api/scout/route.ts`, `lib/scout/server/decide.ts`, `lib/scout/server/model.ts`); what comes here and when is in `docs/ORIGIN.md`.
+- Siblings: `scout-js` (browser SDKs, initial docs commit `800ea36`, pushed) and `scout-demo` (frozen at `aafd6a2`). `scout-server-sdks` is planned, not created. The unversioned `~/codes/scout-agent/CLAUDE.md` indexes the repos.
 
 ## Verification record
 
-Nothing has been run in this repository. There is nothing to run.
-
-Measured facts carried over from `scout-demo` (Ayush's measurements on his Ubuntu laptop, 11 Oct 2026, unless noted). They are single runs, not benchmarks.
+Nothing has run in this repository. Measured facts carried over from `scout-demo` (Ayush's single runs on his Ubuntu laptop, 11 Oct 2026, unless noted; not benchmarks):
 
 | What | Result |
 |---|---|
-| Dev model check (`GET /api/scout/check`, `gpt-6-luna`, effort `none`, tiny prompt) | Reply `ok`, 13 input / 5 output tokens. First call 3,619 ms (warm-up), then about 1.5 s average over repeated calls |
+| Dev model check (`GET /api/scout/check`, `gpt-6-luna`, effort `none`, tiny prompt) | Reply `ok`, 13 input / 5 output tokens; first call 3,619 ms (warm-up), then about 1.5 s average |
 | Decision model time (`POST /api/scout`, effort `low`, strict schema) | About 2–3 s per decision |
-| "what can you do?" → answer from facts | Model time (`modelMs`) 2,160 ms |
-| "show me customers" → recorded workflow, 2 steps verified | Model time (`modelMs`) 2,853 ms |
-| "add prakhar@c.com as Admin" / "add me@Me.com as member" → 5 steps verified | Model time (`modelMs`) 2,070 / 2,751 ms |
-| End-to-end time for those four chat cases | Not recorded. The chat then showed only `modelMs`; first-change and total timings were added later (`198cdfe`) |
-| Decision instructions size | About 670 input tokens with two workflows and the dashboard facts (from the planning conversation) |
-| Estimated cost per decision | About $0.0001 at $0.10 / $0.50 per 1M tokens. Arithmetic, not a measurement |
-| Agent-run in scout-demo (11 Oct) | `npm run lint` clean, `npm run build` passes (7 routes), `npm test` 16/16; re-run of `npm test` on 13 Oct: 16/16 |
+| "what can you do?" → answer from facts | `modelMs` 2,160 ms |
+| "show me customers" → recorded workflow, 2 steps verified | `modelMs` 2,853 ms |
+| "add prakhar@c.com as Admin" / "add me@Me.com as member" → 5 steps verified | `modelMs` 2,070 / 2,751 ms |
+| End-to-end time for those cases | Not recorded (first-change and total timings came later, `198cdfe`) |
+| Decision instructions size | About 670 input tokens with two workflows (from the planning conversation) |
+| Cost per decision | About $0.0001 at $0.10 / $0.50 per 1M tokens (arithmetic) |
+| Agent-run in scout-demo | 11 Oct: `npm run lint` clean, `npm run build` passes (7 routes), `npm test` 16/16; 13 Oct: `npm test` 16/16 |
 
-Prompt caching was irrelevant at the prototype's ~670 tokens. Revisit it when instructions grow (contract §2.5 estimates 4–5k tokens with a full catalog). Keep the static part (rules, facts, catalog from the pinned snapshot) first and the per-request history and message last, as the prototype's `decide()` already does: static rules, facts and catalog in `instructions`; history and message in `input` (`docs/CLOUD_DESIGN.md` §3.3). Revisit model latency if voice feels slow.
+Prompt caching was irrelevant at ~670 tokens; revisit when the catalog grows (contract §2.5 estimates 4–5k tokens). Keep the static part first and history and message last, as the prototype's `decide()` does (`docs/CLOUD_DESIGN.md` §3.3).
 
 ## Decisions
 
 | Date | Decision |
 |---|---|
-| 4 Oct | The model selects an enabled workflow and inputs, answers from facts, or clarifies. Its output is validated at runtime; credentials stay on the server. Deterministic execution before any model. |
-| 8 Oct | Model chosen in one server module (`SCOUT_MODEL`), so switching is one line. The model only decides; the browser speaks. Claude Haiku 5.5 chosen as the cheapest Claude (**superseded 11 Oct**, see below). |
-| 8 Oct | Integration doesn't need Scout access to client code. Client apps can't be wiped, so workflows will save starting conditions and validation runs in a demo or sandbox account. Reset never deletes saved workflows. |
-| 11 Oct | Switched to OpenAI because Claude API credit wasn't available: `gpt-6-luna` ($0.10 / $0.50 per 1M), Responses API, structured outputs. `gpt-5-nano` ($0.05 / $0.40) is cheaper but deprecated. A ChatGPT subscription doesn't include API credit. Switching back to Claude when credit exists is possible (a one-module change) but not decided. |
-| 11 Oct | Decision endpoint contract: strict schema `scout_decision` (`kind`, `workflowId`, `inputs` as `{name, value}` pairs, `message`), `DECISION_EFFORT = "low"`, `readDecision` on server and browser. Tune effort with measurements. |
-| — (planning conversation, date not recorded) | Jev (jev-ai.pro) evaluated and rejected: a text-only scoring/classification API, no extraction, answers or voice. Groq and Cerebras noted as speed options. |
-| 11 Oct | Aman's review (proposed direction): clients may not supply an engineer, so lean toward a hosted cloud browser (Browserbase) for visitors and perhaps a Chrome extension for admin teaching; keep the SDK for clients with engineers; keep a Scout widget; rehearse a login wall (Clerk or Google OAuth) in a rehearsal app; ask Supersonik's chat how a company with no engineers sets up. Auth matters for the hosted browser, the console and the paid decision endpoint. |
-| 11 Oct | The agent may run lint, build and tests itself. |
-| 13 Oct | scout-demo frozen. Work continues in `scout-js` (one monorepo, a package per tier) and `scout-cloud` (separate). Code is copied from scout-demo with provenance, never moved. |
-| 13 Oct | Tier 0 gets two releases: Release A in-product first, Release B Supersonik-style hosted after. |
-| 13 Oct | Prototype build mode continues in scout-js and scout-cloud (Ayush): the agent writes each step's code and explains it, plain language first; Ayush reviews and tests. Coaching only when he asks. |
-| 13 Oct | Scout runs in the browser, so the client's backend language doesn't matter; the frontend kind (SPA or server-rendered multi-page) does. Language-specific SDKs belong on the server API side (create links, pull sessions/transcripts/insights into CRMs), in a future `scout-server-sdks`. |
+| 4 Oct | The model selects an enabled workflow and inputs, answers from facts, or clarifies; its output is validated at runtime; credentials stay on the server. Deterministic execution before any model. |
+| 8 Oct | Model chosen in one server module (`SCOUT_MODEL`). The model only decides; the browser speaks. Integration needs no Scout access to client code; workflows save starting conditions and validation runs in a demo or sandbox account. |
+| 11 Oct | OpenAI `gpt-6-luna` ($0.10 / $0.50 per 1M), Responses API, structured outputs, replacing Claude Haiku 5.5 (8 Oct) only because Claude API credit wasn't available; switching back is a one-module change, not decided. A ChatGPT subscription includes no API credit. Strict schema `scout_decision`, `DECISION_EFFORT = "low"`, `readDecision` on server and browser. |
+| 11 Oct | Aman's review: clients may not supply an engineer, so lean toward a hosted cloud browser for visitors, perhaps a Chrome extension for admin teaching; keep the SDK and a widget; rehearse a login wall. The agent may run lint, build and tests itself. |
+| — | Jev (jev-ai.pro) evaluated and rejected (text scoring only). Groq and Cerebras noted as speed options. (Planning conversation; date not recorded.) |
+| 13 Oct | scout-demo frozen; work continues in `scout-js` and `scout-cloud`; code copied with provenance, never moved. Tier 0 gets Release A (in-product) then Release B (hosted). Build mode continues (Ayush). The client's backend language doesn't matter; language-specific SDKs belong to the server API (`scout-server-sdks`). |
+| 14 Oct | (Ayush) Release A split into D1–D3. D1 keeps workflows and facts as JSON files. Aman wants an npm package to test in his own or a real client app, so the D1 cloud must be hosted. Docs trimmed. One branch per deliverable. |
+| 14 Oct | (Ayush) Keep the prototype's stack (Next.js 16, React 19, TypeScript, Tailwind v4, Node 22, npm), as option 3 (`docs/CLOUD_DESIGN.md` §10.1). D1 model key: Ayush's OpenAI API key with a $5 prepaid balance, possibly replaced by one from Aman; set only in the host's environment. Tarball first, npm publish later. |
+| 14 Oct | (Agent, delegated by Ayush: "take best decision") D1 host: Railway Hobby, about $5 a month, with a volume for the JSON files. Vercel Hobby (non-commercial only, no disk), Render Free (no disk, sleeps) and Fly.io (more setup) rejected (§6.2). Ayush creates the account and pays. |
+| 14 Oct | (Ayush) D1 runs with **no origin allowlist** (like Supersonik's slug-only widget, `docs/BACKGROUND.md` §3); one is added later only if required. Hard monthly cost cap **$4**. Teach saving behind an interim **per-project teach passcode** until D2's admin sign-in. Contract §2.2, §2.6; `docs/CLOUD_DESIGN.md` §6.2. |
 
 ## Pending approvals
 
-- scout-cloud stack: reuse Next.js route handlers, or a separate API service.
-- Database: SQLite first, then Postgres (suggested).
-- Test framework beyond `node:test`.
-- scout-js bundler and build output (esbuild suggested), which consuming `@scout/core` from here depends on (`docs/CLOUD_DESIGN.md` §10.2).
-- Server-owned decision catalog and facts, loaded from the session's pinned config snapshot, because a public publishable key means anyone can call decide (`docs/API_CONTRACT.md` §5.1).
-- How scout-cloud consumes `@scout/core`. PROPOSED (`docs/CLOUD_DESIGN.md` §10.2): imported rather than copied (this choice itself is pending, not only the method); a `file:../scout-js/packages/core` link during development, then a pinned registry version.
-- Admin sign-in provider: Clerk or Google OAuth.
-- Real domains for the placeholder hosts `api.scout.example`, `cdn.scout.example`, `app.scout.example`.
-- The 21 open questions in `docs/API_CONTRACT.md` §7.
-- The cloud-specific open questions in `docs/CLOUD_DESIGN.md` §13, and the choices it leaves pending elsewhere: ORM (Drizzle recommended), error tracking (Sentry), retention defaults (30 / 90 days / 13 months / 1 year), the $20 default monthly budget and the global spend cap, server-built history, Live View versus screencast relay, and `persist` policy. These block the first milestones: database and ORM (C1), sign-in provider (C7), deployment platform (C12), and the B0 spike's provider account and spend.
+Blocking D1 first:
 
-## Server pieces to import from scout-demo@aafd6a2
+1. The C0 dependency install (the stack itself is decided).
+2. Ayush creates the Railway account when D1.5 is reached; until then everything runs locally.
+3. How scout-cloud gets `@scout/core` once hosted: copy with provenance or a published package (§10.2); the `@scout` npm scope's ownership is unchecked.
+4. The server owning catalog and facts (contract §5.1).
 
-Not imported yet. Which files come here, how each is treated, and what to adapt are in `docs/ORIGIN.md`. Prototype doc drift not to copy is listed in `docs/BACKGROUND.md` §2.12.
-
-## Background research
-
-Supersonik's public docs and Browserbase's docs, as read on 13 Oct 2026 (not verified by us), are summarised in `docs/BACKGROUND.md` §3–§4; what we borrow is in §3.6 there.
+Then D2: database and ORM (C1; SQLite through Drizzle suggested), the optional allowlist (q23), sign-in provider (C7; Clerk or Google OAuth), deployment platform (C12), retention defaults, per-project budgets and the global cap, server-built history, real domains for the `*.scout.example` placeholders. D3: the B0 provider account and spend. All other questions: `docs/CLOUD_DESIGN.md` §13 (tagged by deliverable) and contract §7.
 
 ## Next steps
 
-1. Review `docs/CLOUD_DESIGN.md` and `docs/API_CONTRACT.md` with Ayush (the contract together with scout-js's SDK design).
-2. Choose the stack and storage (see Pending approvals).
-3. Import the server pieces from `scout-demo@aafd6a2` with provenance (`docs/ORIGIN.md`).
-4. Build the minimal cloud for Release A: projects, keys and origins, published config and snapshots, sessions, decide, events, admin workflows and facts, rate limits and budget.
-5. Release B: hosted runner spike (cloud browser session, persisted demo login, injected `@scout/agent`, live stream).
-6. Open item from Aman's review (11 Oct), not done: ask Supersonik's own chat how a company with no engineers sets it up. It informs Release B onboarding.
-7. Open item from Aman's review (11 Oct), not done: the login-wall rehearsal app (Clerk or Google OAuth). It also informs the console sign-in choice (C7) and demo-account login capture (`docs/CLOUD_DESIGN.md` §7.6).
-8. After the SDK work: the investor discussion (selling options, competitors such as AI demo agents, interactive demo platforms, digital adoption platforms and AI sales assistants, and the prototypes the pitch needs).
+1. Ayush reviews the trimmed docs (the contract together with scout-js's SDK design) and says whether to commit them.
+2. Settle the D1 approvals above.
+3. C0 scaffold, then D1.1–D1.5 (`docs/CLOUD_DESIGN.md` §12), coordinated with scout-js's A11.
+4. D2, then the D3 spike.
+5. Open items from Aman's review (11 Oct), not done: ask Supersonik's chat how a company with no engineers sets it up; the login-wall rehearsal app (informs C7 and demo-account login capture, §7.6).
+6. After the SDK work: the investor discussion (selling options, competitors, the prototypes the pitch needs).
