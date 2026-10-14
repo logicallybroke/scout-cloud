@@ -1,6 +1,5 @@
-import type { ScoutDecision, ScoutRequest } from "@/lib/scout/core/contracts";
-import { readDecision } from "@/lib/scout/core/decision";
-import { DECISION_EFFORT, getModelClient, SCOUT_MODEL } from "./model";
+import { readDecision, type ScoutDecision, type ScoutRequest } from "@scout/core";
+import { DECISION_EFFORT, getModelClient, SCOUT_MODEL } from "../model/model.ts";
 
 // Strict structured output: every field is required, and unused ones are null or empty.
 // Inputs are name/value pairs because strict schemas can't have free-form object keys.
@@ -24,7 +23,9 @@ const DECISION_SCHEMA = {
     },
 };
 
-function buildInstructions(request: ScoutRequest): string {
+// Static rules, facts and catalog first; history and the message go in `input`, so provider
+// prompt caching can apply later (CLOUD_DESIGN §3.3).
+export function buildInstructions(request: ScoutRequest): string {
     return [
         "You are Scout, a live demo assistant inside a software product. A visitor is asking for something.",
         "Choose exactly one response kind:",
@@ -33,6 +34,7 @@ function buildInstructions(request: ScoutRequest): string {
         "- answer: the visitor asks a question that the FACTS answer. Answer briefly, using only the facts.",
         "- unsupported: anything else. message: briefly say what you can show instead.",
         "Rules: never invent workflows, inputs, steps, URLs, or facts. For kinds other than run, set workflowId to null and inputs to []. Input names must match the workflow exactly.",
+        "If an input lists allowedValues, use exactly one of them, or clarify.",
         "",
         "FACTS:",
         ...request.facts.map((fact) => `- ${fact}`),
@@ -43,8 +45,8 @@ function buildInstructions(request: ScoutRequest): string {
 }
 
 export type DecideResult =
-    | { ok: true; decision: ScoutDecision; modelMs: number }
-    | { ok: false; error: string };
+    | { ok: true; decision: ScoutDecision; modelMs: number; usage: { inputTokens: number; outputTokens: number } }
+    | { ok: false; error: string; usage: { inputTokens: number; outputTokens: number } };
 
 export async function decide(request: ScoutRequest): Promise<DecideResult> {
     const started = performance.now();
@@ -65,16 +67,20 @@ export async function decide(request: ScoutRequest): Promise<DecideResult> {
         },
     });
     const modelMs = Math.round(performance.now() - started);
+    const usage = {
+        inputTokens: response.usage?.input_tokens ?? 0,
+        outputTokens: response.usage?.output_tokens ?? 0,
+    };
 
     if (response.status !== "completed" || !response.output_text) {
-        return { ok: false, error: "The model did not return a complete decision." };
+        return { ok: false, error: "The model did not return a complete decision.", usage };
     }
 
     let raw: unknown;
     try {
         raw = JSON.parse(response.output_text);
     } catch {
-        return { ok: false, error: "The model returned invalid JSON." };
+        return { ok: false, error: "The model returned invalid JSON.", usage };
     }
 
     // Convert [{ name, value }] to { name: value } before the shared runtime check.
@@ -90,6 +96,6 @@ export async function decide(request: ScoutRequest): Promise<DecideResult> {
 
     const decision = readDecision(raw, request.workflows);
     return decision
-        ? { ok: true, decision, modelMs }
-        : { ok: false, error: "The model's decision did not match the expected shape." };
+        ? { ok: true, decision, modelMs, usage }
+        : { ok: false, error: "The model's decision did not match the expected shape.", usage };
 }

@@ -1,4 +1,4 @@
-import { describeModelError, getModelClient, SCOUT_MODEL } from "@/lib/scout/server/model";
+import { describeModelError, getModelClient, SCOUT_MODEL } from "../../../server/model/model.ts";
 
 // Development-only access check: is the key working, is the model available to it,
 // and how long does one tiny call take? Each visit costs a fraction of a cent.
@@ -31,7 +31,7 @@ export async function GET() {
                 : null,
         });
     } catch (error) {
-        const { status, error: message } = describeModelError(error);
-        return Response.json({ ok: false, error: message }, { status });
+        const { status, error: code, detail } = describeModelError(error);
+        return Response.json({ error: code, detail }, { status });
     }
 }
